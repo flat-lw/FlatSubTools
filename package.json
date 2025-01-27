@@ -1,0 +1,12 @@
+{
+    "name" : "jp.leuf.flat.subtools",
+    "displayName" : "Flat Sub Tools",
+    "version" : "0.3.0",
+    "unity" : "2022.3",
+    "description" : "Tools for VRChat Asset Setting",
+    "vpmDependencies" : {
+      "com.vrchat.avatars" : ">=3.7.5",
+      "nadena.dev.ndmf" : ">=1.6.2",
+      "nadena.dev.modular-avatar" : ">=1.11.1"
+    }
+}
