@@ -3,10 +3,17 @@
     "displayName" : "Flat Sub Tools",
     "version" : "0.3.0",
     "unity" : "2022.3",
+    "author": {
+      "name": "flat",
+      "email": "flat@leuf.jp",
+      "url": "https://github.com/flat-lw/FlatSubTools"
+    },
     "description" : "Tools for VRChat Asset Setting",
     "vpmDependencies" : {
       "com.vrchat.avatars" : ">=3.7.5",
       "nadena.dev.ndmf" : ">=1.6.2",
       "nadena.dev.modular-avatar" : ">=1.11.1"
-    }
+    },
+    "repo" : "https://github.com/flat-lw/FlatSubTools/blob/main/package.json",
+    "url" : "https://github.com/flat-lw/FlatSubTools/releases/download/flatsubtools_release/FlatSubTools_v0.3.0.zip"
 }
