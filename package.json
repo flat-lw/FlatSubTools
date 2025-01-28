@@ -5,7 +5,7 @@
   "url" : "https://flat-lw.github.io/FlatSubTools/package.json",
     "packages" : {
       "jp.leuf.flat.subtools" : {
-        "version" : "0.3.0",
+        "versions" : "0.3.0",
         "unity" : "2022.3",
         "name" : "jp.leuf.flat.subtools",
         "displayName" : "Flat Sub Tools",
