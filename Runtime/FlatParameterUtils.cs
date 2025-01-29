@@ -1,7 +1,5 @@
 using UnityEngine;
 using UnityEditor;
-using nadena.dev.ndmf;
-using nadena.dev.modular_avatar.core;
 using VRC.SDK3;
 using VRC.SDKBase;
 using System.Collections.Generic;

@@ -1,0 +1,21 @@
+{
+    "name": "NewAssembly",
+    "rootNamespace": "",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "VRCSDKBase.dll",
+        "VRCSDK3A.dll",
+        "VRC.Dynamics.dll",
+        "VRC.SDK3.Dynamics.Constraint.dll",
+        "VRC.SDK3.Dynamics.Constraint.Editor.dll",
+        "VRC.SDK3.Dynamics.PhysBone.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
