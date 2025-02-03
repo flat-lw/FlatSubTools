@@ -1,7 +1,7 @@
 {
   "unity" : "2022.3",
   "name" : "jp.leuf.flat.subtools",
-  "version" : "0.3.2",
+  "version" : "0.3.3",
   "displayName" : "Flat Sub Tools",
   "description" : "Tools for VRChat Asset Setting",
   "auther" : {
@@ -9,7 +9,7 @@
     "email" : "flat@leuf.jp",
     "url" : "https://github.com/flat-lw/FlatSubTools"
   },
-  "url" : "https://github.com/flat-lw/FlatSubTools/releases/download/flat_sub_tools_v0.3.2/FlatSubTools_v0.3.2.zip?",
+  "url" : "https://github.com/flat-lw/FlatSubTools/releases/download/flat_sub_tools_v0.3.3/FlatSubTools_v0.3.3.zip?",
   "repo" : "https://flat-lw.github.io/FlatSubTools/vpm.json",
   "vpmDependencies" : {
     "com.vrchat.avatars" : ">=3.7.5",

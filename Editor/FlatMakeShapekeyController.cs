@@ -23,6 +23,7 @@ namespace Flat.subtools{
         List<shapekeyHandlar> blendShapes = new List<shapekeyHandlar>();
         string menuTitle;
         string paramName;
+        bool renameParam = true;
         bool margeMA;
         bool abs;
         Texture2D menuIcon;
@@ -64,12 +65,18 @@ namespace Flat.subtools{
 
             menuTitle = EditorGUILayout.TextField("Menuのタイトル", menuTitle);
             paramName = EditorGUILayout.TextField("Parameter名", paramName);
+            renameParam = EditorGUILayout.Toggle("Parameterを自動リネーム", renameParam);
+            if(renameParam){
+                EditorGUILayout.LabelField("", alartTextStyle);
+            }else{
+                EditorGUILayout.LabelField("Parameterを他のMAから操作しない場合はONにしてください。", alartTextStyle);
+            }
             menuIcon = (Texture2D)EditorGUILayout.ObjectField("Menuのアイコン", menuIcon, typeof(Texture2D), false);
             margeMA = EditorGUILayout.Toggle("既に存在するMAに追加する", margeMA);
             if(margeMA){
-                EditorGUILayout.LabelField("既に存在するMAに追加されます。足りないConponentは作成します。", alartTextStyle);
+                EditorGUILayout.LabelField("MAを付ける対象に既に存在するMAに追加されます。足りないConponentは作成します。", alartTextStyle);
             }else{
-                EditorGUILayout.LabelField("新規作成します。既にあるComponentは上書きします。", alartTextStyle);
+                EditorGUILayout.LabelField("新規作成します。既に対象に付いているComponentは上書きします。", alartTextStyle);
             }
             abs = EditorGUILayout.Toggle("絶対パスを使う", abs);
             if(GUILayout.Button("Asset保存先を指定")){
@@ -111,15 +118,23 @@ namespace Flat.subtools{
                     displayAlart.Add("Parameter名を指定してください。");
                     nullFlag = true;
                 }
+                if(abs==false){
+                    for(int i=0;i<toggleObjects.Count;i++){
+                        if(!IsChildOf(toggleObjects[i],target)){
+                            displayAlart.Add("一つでもToggle対象がMAを付けるオブジェクトの子で無い場合、絶対パスを指定する必要があります。");
+                            nullFlag = true;
+                        }
+                    }
+                }
                 if(folderPath==null){
                     displayAlart.Add("Asset保存先を指定してください。");
                     nullFlag = true;
                 }
-                if(controllerName==""&&margeMA==false){
+                if((controllerName==""||controllerName==null)&&margeMA==false){
                     displayAlart.Add("AnimatorController名を指定してください。");
                     nullFlag = true;
                 }
-                if(menuName==""){
+                if(menuName==""||menuName==null){
                     displayAlart.Add("VRCExpressionMenu名を指定してください。");
                     nullFlag = true;
                 }
@@ -235,6 +250,7 @@ namespace Flat.subtools{
             param.nameOrPrefix = paramName;
             param.syncType = ParameterSyncType.Float;
             param.defaultValue = 0;
+            param.internalParameter = true;
             parameters.Add(param);
 
             target.GetComponent<ModularAvatarParameters>().parameters = parameters;
@@ -265,6 +281,19 @@ namespace Flat.subtools{
                 }
             }
             Debug.Log(blendShapes.Count);
+        }
+
+        bool IsChildOf(GameObject child, GameObject parent){
+            Transform current = child.transform;
+            while (current != null)
+            {
+                if (current == parent.transform)
+                {
+                    return true;
+                }
+                current = current.parent;
+            }
+            return false;
         }
     }
 
