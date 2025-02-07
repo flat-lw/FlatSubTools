@@ -8,24 +8,31 @@ using nadena.dev.ndmf;
 using nadena.dev.modular_avatar.core;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
+
 namespace Flat.subtools{
-    public class FlatMakeToggleAnimation : MonoBehaviour
+    public class FlatMakeWorldFixAnimation : MonoBehaviour
     {
-        [MenuItem("FlatSubTools/MakeToggleAnimation")]
+        [MenuItem("FlatSubTools/MakeWorldFixAnimation")]
         private static void makeComponents(){
-            EditorWindow.GetWindow<MakeToggleAnimationWindow>("FlatSubTools-MakeToggleAnimation");
+            EditorWindow.GetWindow<MakeWorldFixAnimationWindow>("FlatSubTools-MakeWorldFixAnimation");
         }
     }
 
-    public class MakeToggleAnimationWindow : EditorWindow{
+    public class MakeWorldFixAnimationWindow : EditorWindow{
         GameObject target;
-        List<GameObject> toggleObjects = new List<GameObject>();
-        string menuTitle;
-        string paramName;
+        GameObject bindBone;
+        List<GameObject> worldFixObjects = new List<GameObject>();
+        string rootMenuTitle;
+        string enableMenuTitle;
+        string fixMenuTitle;
+        string enableParamName;
+        string fixParamName;
         bool renameParam = true;
         bool margeMA;
         bool abs;
-        Texture2D menuIcon;
+        Texture2D rootMenuIcon;
+        Texture2D enableMenuIcon;
+        Texture2D fixMenuIcon;
         string folderPath;
         string controllerName;
         string menuName;
@@ -36,25 +43,33 @@ namespace Flat.subtools{
             //テキスト
             EditorGUILayout.LabelField("MAを付けるオブジェクト");
             target = (GameObject)EditorGUILayout.ObjectField(target, typeof(GameObject), true);
-            EditorGUILayout.LabelField("Toggle対象");
-            for(int i=0;i<toggleObjects.Count; i++){
-                toggleObjects[i] = (GameObject)EditorGUILayout.ObjectField(toggleObjects[i], typeof(GameObject), true);
+            EditorGUILayout.LabelField("追従ボーン");
+            bindBone = (GameObject)EditorGUILayout.ObjectField(bindBone, typeof(GameObject), true);
+            EditorGUILayout.LabelField("ワールド固定対象");
+            for(int i=0;i<worldFixObjects.Count; i++){
+                worldFixObjects[i] = (GameObject)EditorGUILayout.ObjectField(worldFixObjects[i], typeof(GameObject), true);
             }
             if(GUILayout.Button("Add")){
-                toggleObjects.Add(null);
+                worldFixObjects.Add(null);
             }
             if(GUILayout.Button("Delete")){
-                toggleObjects.RemoveAt(toggleObjects.Count-1);
+                worldFixObjects.RemoveAt(worldFixObjects.Count-1);
             }
-            menuTitle = EditorGUILayout.TextField("Menuのタイトル", menuTitle);
-            paramName = EditorGUILayout.TextField("Parameter名", paramName);
+            rootMenuTitle = EditorGUILayout.TextField("RootMenuのタイトル", rootMenuTitle);
+            rootMenuIcon = (Texture2D)EditorGUILayout.ObjectField("RootMenuのアイコン", rootMenuIcon, typeof(Texture2D), false);
+            enableMenuTitle = EditorGUILayout.TextField("ON/OFF Menuのタイトル", enableMenuTitle);
+            enableMenuIcon = (Texture2D)EditorGUILayout.ObjectField("ON/OFF Menuのアイコン", enableMenuIcon, typeof(Texture2D), false);
+            fixMenuTitle = EditorGUILayout.TextField("ワールド固定Menuのタイトル", fixMenuTitle);
+            fixMenuIcon = (Texture2D)EditorGUILayout.ObjectField("ワールド固定Menuのアイコン", fixMenuIcon, typeof(Texture2D), false);
+
+            enableParamName = EditorGUILayout.TextField("ON/OFF Parameter名", enableParamName);
+            fixParamName = EditorGUILayout.TextField("ワールド固定Parameter名", fixParamName);
             renameParam = EditorGUILayout.Toggle("Parameterを自動リネーム", renameParam);
             if(renameParam){
                 EditorGUILayout.LabelField("", alartTextStyle);
             }else{
                 EditorGUILayout.LabelField("Parameterを他のMAから操作しない場合はONにしてください。", alartTextStyle);
             }
-            menuIcon = (Texture2D)EditorGUILayout.ObjectField("Menuのアイコン", menuIcon, typeof(Texture2D), false);
             margeMA = EditorGUILayout.Toggle("既に存在するMAに追加する", margeMA);
             if(margeMA){
                 EditorGUILayout.LabelField("MAを付ける対象に既に存在するMAに追加されます。足りないConponentは作成します。", alartTextStyle);
@@ -79,6 +94,7 @@ namespace Flat.subtools{
             }else{
                 controllerName = EditorGUILayout.TextField("AnimatorController名", controllerName);
             }
+
             menuName = EditorGUILayout.TextField("VRCExpressionMenu名", menuName);
             if(GUILayout.Button("MAを作成")){
                 bool nullFlag = false;
@@ -87,23 +103,35 @@ namespace Flat.subtools{
                     displayAlart.Add("MAを付けるオブジェクトを指定してください。");
                     nullFlag = true;
                 }
-                for(int i=0;i<toggleObjects.Count; i++){
-                    if(toggleObjects[i]==null){
+                for(int i=0;i<worldFixObjects.Count; i++){
+                    if(worldFixObjects[i]==null){
                         displayAlart.Add("Toggle対象の" + (i+1) + "番目にオブジェクトを指定してください。");
                         nullFlag = true;
                     }
                 }
-                if(menuTitle==""){
+                if(rootMenuTitle==""){
                     displayAlart.Add("Menuのタイトルを指定してください。");
                     nullFlag = true;
                 }
-                if(paramName==""){
+                if(enableMenuTitle==""){
+                    displayAlart.Add("Menuのタイトルを指定してください。");
+                    nullFlag = true;
+                }
+                if(fixMenuTitle==""){
+                    displayAlart.Add("Menuのタイトルを指定してください。");
+                    nullFlag = true;
+                }
+                if(enableParamName==""){
+                    displayAlart.Add("Parameter名を指定してください。");
+                    nullFlag = true;
+                }
+                if(fixParamName==""){
                     displayAlart.Add("Parameter名を指定してください。");
                     nullFlag = true;
                 }
                 if(abs==false){
-                    for(int i=0;i<toggleObjects.Count;i++){
-                        if(!IsChildOf(toggleObjects[i],target)){
+                    for(int i=0;i<worldFixObjects.Count;i++){
+                        if(!IsChildOf(worldFixObjects[i],target)){
                             displayAlart.Add("一つでもToggle対象がMAを付けるオブジェクトの子で無い場合、絶対パスを指定する必要があります。");
                             nullFlag = true;
                         }
@@ -148,34 +176,9 @@ namespace Flat.subtools{
             }else{
                 controller = AnimatorController.CreateAnimatorControllerAtPath(folderPath+"/"+controllerName+".controller");
             }
-            controller.AddParameter(paramName,AnimatorControllerParameterType.Bool);
 
             EditorUtility.SetDirty(controller);
             AssetDatabase.SaveAssets();
-
-            //AnimationClipを作成し、toggleObjectsの中身のOn、Offをそれぞれ順番に追加していく
-            AnimationClip toggle_on = new AnimationClip();
-            foreach(GameObject toggleObject in toggleObjects){
-                AnimationCurve curve_on = AnimationCurve.Constant(0,0,1);
-                if(abs){
-                    toggle_on.SetCurve(AnimationUtility.CalculateTransformPath(toggleObject.transform, flatCommonFunctions.getRootObject(toggleObject).transform), typeof(GameObject), "m_IsActive", curve_on);
-                }else{
-                    toggle_on.SetCurve(AnimationUtility.CalculateTransformPath(toggleObject.transform, target.transform), typeof(GameObject), "m_IsActive", curve_on);
-                }
-            }
-            AssetDatabase.CreateAsset(toggle_on,folderPath+"/"+paramName+"_on.Anim");
-
-            AnimationClip toggle_off = new AnimationClip();
-            foreach(GameObject toggleObject in toggleObjects){
-                AnimationCurve curve_off = AnimationCurve.Constant(0,0,0);
-                if(abs){
-                    toggle_off.SetCurve(AnimationUtility.CalculateTransformPath(toggleObject.transform, null), typeof(GameObject), "m_IsActive", curve_off);
-                }else{
-                    toggle_off.SetCurve(AnimationUtility.CalculateTransformPath(toggleObject.transform, target.transform), typeof(GameObject), "m_IsActive", curve_off);
-                }
-
-            }
-            AssetDatabase.CreateAsset(toggle_off,folderPath+"/"+paramName+"_off.Anim");
 
             //AnimationController内のlayerのリストを削除
             if(margeMA){
@@ -183,8 +186,60 @@ namespace Flat.subtools{
                 controller.layers = new AnimatorControllerLayer[0];
             }
 
-            flatCommonFunctions.makeSimpleToggleLayer(controller, menuTitle, paramName, toggle_on, toggle_off,true);
 
+            // ON/OFFのレイヤーを作成
+            //AnimationClipを作成し、worldFixObjectsの中身のOn、Offをそれぞれ順番に追加していく
+            AnimationClip toggle_on = new AnimationClip();
+            foreach(GameObject worldFixObject in worldFixObjects){
+                AnimationCurve curve_on = AnimationCurve.Constant(0,0,1);
+                if(abs){
+                    toggle_on.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, null), typeof(GameObject), "m_IsActive", curve_on);
+                }else{
+                    toggle_on.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, target.transform), typeof(GameObject), "m_IsActive", curve_on);
+                }
+            }
+            AssetDatabase.CreateAsset(toggle_on,folderPath+"/"+enableParamName+"_on.Anim");
+
+            AnimationClip toggle_off = new AnimationClip();
+            foreach(GameObject worldFixObject in worldFixObjects){
+                AnimationCurve curve_off = AnimationCurve.Constant(0,0,0);
+                if(abs){
+                    toggle_off.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, null), typeof(GameObject), "m_IsActive", curve_off);
+                }else{
+                    toggle_off.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, target.transform), typeof(GameObject), "m_IsActive", curve_off);
+                }
+            }
+            AssetDatabase.CreateAsset(toggle_off,folderPath+"/"+enableParamName+"_off.Anim");
+            
+            flatCommonFunctions.makeSimpleToggleLayer(controller, enableMenuTitle, enableParamName, toggle_off, toggle_on, false);
+
+            // ワールド固定のレイヤーを作成
+            //AnimationClipを作成し、worldFixObjectsの中身のOn、Offをそれぞれ順番に追加していく
+            AnimationClip bind_bone = new AnimationClip();
+            foreach(GameObject worldFixObject in worldFixObjects){
+                AnimationCurve curve_bone = AnimationCurve.Constant(0,0,1);
+                if(abs){
+                    bind_bone.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, null), typeof(GameObject), "m_IsActive", curve_bone);
+                }else{
+                    bind_bone.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, target.transform), typeof(GameObject), "m_IsActive", curve_bone);
+                }
+            }
+            AssetDatabase.CreateAsset(bind_bone,folderPath+"/"+enableParamName+"_bone.Anim");
+
+            AnimationClip bind_world = new AnimationClip();
+            foreach(GameObject worldFixObject in worldFixObjects){
+                AnimationCurve curve_world = AnimationCurve.Constant(0,0,0);
+                if(abs){
+                    bind_world.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, null), typeof(GameObject), "m_IsActive", curve_world);
+                }else{
+                    bind_world.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, target.transform), typeof(GameObject), "m_IsActive", curve_world);
+                }
+            }
+            AssetDatabase.CreateAsset(bind_world,folderPath+"/"+enableParamName+"_world.Anim");
+            
+            flatCommonFunctions.makeSimpleToggleLayer(controller, fixMenuTitle, fixParamName, bind_bone, bind_world, false);
+
+            //作成したAnimatorControllerをMAに追加
             target.GetComponent<ModularAvatarMergeAnimator>().animator = controller;
 
             //Menuを作成
@@ -195,11 +250,21 @@ namespace Flat.subtools{
                 menu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
                 AssetDatabase.CreateAsset(menu, folderPath+"/"+menuName+".asset");
             }
-            VRCExpressionsMenu.Control menu_toggle = new VRCExpressionsMenu.Control{
-            name = menuTitle,
-            icon = menuIcon,
+
+            VRCExpressionsMenu.Control menu_enable = new VRCExpressionsMenu.Control{
+            name = menuName + "ON/OFF",
+            icon = rootMenuIcon,
             type = VRCExpressionsMenu.Control.ControlType.Toggle,
-            parameter = new VRCExpressionsMenu.Control.Parameter { name = paramName },
+            parameter = new VRCExpressionsMenu.Control.Parameter { name = enableParamName },
+            value = 1.0f
+            };
+            menu.controls.Add(menu_enable);
+
+            VRCExpressionsMenu.Control menu_toggle = new VRCExpressionsMenu.Control{
+            name = menuName + "ワールド固定",
+            icon = rootMenuIcon,
+            type = VRCExpressionsMenu.Control.ControlType.Toggle,
+            parameter = new VRCExpressionsMenu.Control.Parameter { name = fixParamName },
             value = 1.0f
             };
             menu.controls.Add(menu_toggle);
@@ -215,12 +280,19 @@ namespace Flat.subtools{
             }
 
             //パラメーターを作成
-            ParameterConfig param = new ParameterConfig();
-            param.nameOrPrefix = paramName;
-            param.syncType = ParameterSyncType.Bool;
-            param.defaultValue = 1;
-            param.internalParameter = true;
-            parameters.Add(param);
+            ParameterConfig enableParam = new ParameterConfig();
+            enableParam.nameOrPrefix = enableParamName;
+            enableParam.syncType = ParameterSyncType.Bool;
+            enableParam.defaultValue = 1;
+            enableParam.internalParameter = true;
+            parameters.Add(enableParam);
+
+            ParameterConfig fixParam = new ParameterConfig();
+            fixParam.nameOrPrefix = fixParamName;
+            fixParam.syncType = ParameterSyncType.Bool;
+            fixParam.defaultValue = 1;
+            fixParam.internalParameter = true;
+            parameters.Add(fixParam);
 
             target.GetComponent<ModularAvatarParameters>().parameters = parameters;
 

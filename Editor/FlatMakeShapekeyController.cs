@@ -176,7 +176,7 @@ namespace Flat.subtools{
                 AnimationCurve curve_on = AnimationCurve.Linear(0,0,1,100);
                 if(blendShapes[i].enable){
                     if(abs){
-                        toggle_on.SetCurve(AnimationUtility.CalculateTransformPath(blendShapes[i].gameObject.transform, null), typeof(SkinnedMeshRenderer), "blendShape." + blendShapes[i].shapeName, curve_on);
+                        toggle_on.SetCurve(AnimationUtility.CalculateTransformPath(blendShapes[i].gameObject.transform, flatCommonFunctions.getRootObject(blendShapes[i].gameObject).transform), typeof(SkinnedMeshRenderer), "blendShape." + blendShapes[i].shapeName, curve_on);
                     }else{
                         toggle_on.SetCurve(AnimationUtility.CalculateTransformPath(blendShapes[i].gameObject.transform, target.transform), typeof(SkinnedMeshRenderer), "blendShape." + blendShapes[i].shapeName, curve_on);
                     }
@@ -188,7 +188,7 @@ namespace Flat.subtools{
 
             //レイヤーをAnimatorControllerに追加します。
             AnimatorControllerLayer layer = new AnimatorControllerLayer{
-                name = menuName,
+                name = menuTitle,
                 stateMachine = new AnimatorStateMachine(),
                 defaultWeight = 1.0f
             };
@@ -227,7 +227,7 @@ namespace Flat.subtools{
                 AssetDatabase.CreateAsset(menu, folderPath+"/"+menuName+".asset");
             }
             VRCExpressionsMenu.Control menu_radial = new VRCExpressionsMenu.Control{
-            name = menuName,
+            name = menuTitle,
             icon = menuIcon,
             type = VRCExpressionsMenu.Control.ControlType.RadialPuppet,
             subParameters = new VRCExpressionsMenu.Control.Parameter[] {new VRCExpressionsMenu.Control.Parameter { name = paramName }},
