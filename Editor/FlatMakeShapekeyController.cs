@@ -217,6 +217,9 @@ namespace Flat.subtools{
             AssetDatabase.SaveAssets();
 
             target.GetComponent<ModularAvatarMergeAnimator>().animator = controller;
+                        if(abs){
+                target.GetComponent<ModularAvatarMergeAnimator>().pathMode = MergeAnimatorPathMode.Absolute;
+            }
 
             //Menuを作成
             VRCExpressionsMenu menu;

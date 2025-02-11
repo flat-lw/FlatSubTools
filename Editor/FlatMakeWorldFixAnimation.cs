@@ -6,8 +6,12 @@ using UnityEditor.Animations;
 using Flat.subtools;
 using nadena.dev.ndmf;
 using nadena.dev.modular_avatar.core;
+using VRC.SDK3;
 using VRC.SDK3.Avatars.ScriptableObjects;
-
+using VRC.SDK3.Avatars.Components;
+using VRC.SDK3.Dynamics.Constraint.Components;
+using VRC.SDKBase;
+using VRC.Dynamics;
 
 namespace Flat.subtools{
     public class FlatMakeWorldFixAnimation : MonoBehaviour
@@ -169,6 +173,26 @@ namespace Flat.subtools{
                 target.AddComponent<ModularAvatarParameters>();
             }
 
+
+            //追従用のリファレンスボーンを作成
+            GameObject bindBoneRef = new GameObject("bindBoneRef");
+            bindBoneRef.transform.parent = target.transform;
+            ModularAvatarBoneProxy boneProxy = bindBoneRef.AddComponent<ModularAvatarBoneProxy>();
+            boneProxy.target = bindBone.transform;
+            boneProxy.attachmentMode = BoneProxyAttachmentMode.AsChildAtRoot;
+
+            //ワールド固定の対象にParentConstraintを付ける
+            foreach(GameObject worldFixObject in worldFixObjects){
+                GameObject proxy = flatCommonFunctions.makePositionProxy(bindBoneRef, worldFixObject);
+                VRCParentConstraint constraint = proxy.AddComponent<VRCParentConstraint>();
+                VRCConstraintSource source = new VRCConstraintSource();
+                source.SourceTransform = bindBoneRef.transform;
+                source.Weight = 1.0f;
+                constraint.Sources.Add(source);
+                constraint.IsActive = true;
+            }
+
+
             //AnimatorControllerを作成
             AnimatorController controller;
             if(margeMA&&target.GetComponent<ModularAvatarMergeAnimator>().animator!=null){
@@ -193,9 +217,9 @@ namespace Flat.subtools{
             foreach(GameObject worldFixObject in worldFixObjects){
                 AnimationCurve curve_on = AnimationCurve.Constant(0,0,1);
                 if(abs){
-                    toggle_on.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, null), typeof(GameObject), "m_IsActive", curve_on);
+                    toggle_on.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, flatCommonFunctions.getRootObject(worldFixObject).transform), typeof(VRCParentConstraint), "FreezeToWorld", curve_on);
                 }else{
-                    toggle_on.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, target.transform), typeof(GameObject), "m_IsActive", curve_on);
+                    toggle_on.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, target.transform),typeof(GameObject), "m_IsActive", curve_on);
                 }
             }
             AssetDatabase.CreateAsset(toggle_on,folderPath+"/"+enableParamName+"_on.Anim");
@@ -204,9 +228,9 @@ namespace Flat.subtools{
             foreach(GameObject worldFixObject in worldFixObjects){
                 AnimationCurve curve_off = AnimationCurve.Constant(0,0,0);
                 if(abs){
-                    toggle_off.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, null), typeof(GameObject), "m_IsActive", curve_off);
+                    toggle_off.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, flatCommonFunctions.getRootObject(worldFixObject).transform), typeof(VRCParentConstraint), "FreezeToWorld", curve_off);
                 }else{
-                    toggle_off.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, target.transform), typeof(GameObject), "m_IsActive", curve_off);
+                    toggle_off.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, target.transform),typeof(GameObject), "m_IsActive", curve_off);
                 }
             }
             AssetDatabase.CreateAsset(toggle_off,folderPath+"/"+enableParamName+"_off.Anim");
@@ -219,9 +243,9 @@ namespace Flat.subtools{
             foreach(GameObject worldFixObject in worldFixObjects){
                 AnimationCurve curve_bone = AnimationCurve.Constant(0,0,1);
                 if(abs){
-                    bind_bone.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, null), typeof(GameObject), "m_IsActive", curve_bone);
+                    bind_bone.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform.parent, flatCommonFunctions.getRootObject(worldFixObject).transform), typeof(GameObject), "m_IsActive", curve_bone);
                 }else{
-                    bind_bone.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, target.transform), typeof(GameObject), "m_IsActive", curve_bone);
+                    bind_bone.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform.parent, target.transform), typeof(VRCParentConstraint), "FreezeToWorld", curve_bone);
                 }
             }
             AssetDatabase.CreateAsset(bind_bone,folderPath+"/"+enableParamName+"_bone.Anim");
@@ -230,9 +254,9 @@ namespace Flat.subtools{
             foreach(GameObject worldFixObject in worldFixObjects){
                 AnimationCurve curve_world = AnimationCurve.Constant(0,0,0);
                 if(abs){
-                    bind_world.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, null), typeof(GameObject), "m_IsActive", curve_world);
+                    bind_world.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform.parent, flatCommonFunctions.getRootObject(worldFixObject).transform), typeof(GameObject), "m_IsActive", curve_world);
                 }else{
-                    bind_world.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform, target.transform), typeof(GameObject), "m_IsActive", curve_world);
+                    bind_world.SetCurve(AnimationUtility.CalculateTransformPath(worldFixObject.transform.parent, target.transform), typeof(VRCParentConstraint), "FreezeToWorld", curve_world);
                 }
             }
             AssetDatabase.CreateAsset(bind_world,folderPath+"/"+enableParamName+"_world.Anim");
@@ -241,6 +265,9 @@ namespace Flat.subtools{
 
             //作成したAnimatorControllerをMAに追加
             target.GetComponent<ModularAvatarMergeAnimator>().animator = controller;
+            if(abs){
+                target.GetComponent<ModularAvatarMergeAnimator>().pathMode = MergeAnimatorPathMode.Absolute;
+            }
 
             //Menuを作成
             VRCExpressionsMenu menu;
@@ -290,7 +317,7 @@ namespace Flat.subtools{
             ParameterConfig fixParam = new ParameterConfig();
             fixParam.nameOrPrefix = fixParamName;
             fixParam.syncType = ParameterSyncType.Bool;
-            fixParam.defaultValue = 1;
+            fixParam.defaultValue = 0;
             fixParam.internalParameter = true;
             parameters.Add(fixParam);
 

@@ -1,7 +1,7 @@
 {
   "unity" : "2022.3",
   "name" : "jp.leuf.flat.subtools",
-  "version" : "0.3.4",
+  "version" : "0.4.0",
   "displayName" : "Flat Sub Tools",
   "description" : "Tools for VRChat Asset Setting",
   "auther" : {

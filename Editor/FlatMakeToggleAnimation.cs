@@ -169,7 +169,7 @@ namespace Flat.subtools{
             foreach(GameObject toggleObject in toggleObjects){
                 AnimationCurve curve_off = AnimationCurve.Constant(0,0,0);
                 if(abs){
-                    toggle_off.SetCurve(AnimationUtility.CalculateTransformPath(toggleObject.transform, null), typeof(GameObject), "m_IsActive", curve_off);
+                    toggle_off.SetCurve(AnimationUtility.CalculateTransformPath(toggleObject.transform, flatCommonFunctions.getRootObject(toggleObject).transform), typeof(GameObject), "m_IsActive", curve_off);
                 }else{
                     toggle_off.SetCurve(AnimationUtility.CalculateTransformPath(toggleObject.transform, target.transform), typeof(GameObject), "m_IsActive", curve_off);
                 }
@@ -186,6 +186,9 @@ namespace Flat.subtools{
             flatCommonFunctions.makeSimpleToggleLayer(controller, menuTitle, paramName, toggle_on, toggle_off,true);
 
             target.GetComponent<ModularAvatarMergeAnimator>().animator = controller;
+                        if(abs){
+                target.GetComponent<ModularAvatarMergeAnimator>().pathMode = MergeAnimatorPathMode.Absolute;
+            }
 
             //Menuを作成
             VRCExpressionsMenu menu;

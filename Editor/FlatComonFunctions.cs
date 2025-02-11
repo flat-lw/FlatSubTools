@@ -90,5 +90,14 @@ namespace Flat.subtools{
             }
             return currentParent.gameObject; 
         }
+
+        static public GameObject makePositionProxy(GameObject root,GameObject target){
+            GameObject proxyObject = new GameObject(target.name);
+            proxyObject.transform.parent = target.transform.parent;
+            proxyObject.transform.localPosition = Vector3.zero;
+            proxyObject.transform.localRotation = Quaternion.identity;
+            target.transform.parent = proxyObject.transform;
+            return proxyObject;
+        }
     }
 }
