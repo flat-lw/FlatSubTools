@@ -17,7 +17,7 @@
               "email" : "flat@leuf.jp",
               "url" : "https://github.com/flat-lw/FlatSubTools"
             },
-            "url" : "https://github.com/flat-lw/FlatSubTools/releases/download/flat_sub_tools_v0.4.0/FlatSubTools_v0.5.0.zip?",
+            "url" : "https://github.com/flat-lw/FlatSubTools/releases/download/flat_sub_tools_v0.5.0/FlatSubTools_v0.5.0.zip?",
             "repo" : "https://flat-lw.github.io/FlatSubTools/vpm.json",
             "vpmDependencies" : {
               "com.vrchat.avatars" : ">=3.7.5",
