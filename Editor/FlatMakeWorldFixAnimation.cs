@@ -180,16 +180,12 @@ namespace Flat.subtools{
             ModularAvatarBoneProxy boneProxy = bindBoneRef.AddComponent<ModularAvatarBoneProxy>();
             boneProxy.target = bindBone.transform;
             boneProxy.attachmentMode = BoneProxyAttachmentMode.AsChildAtRoot;
+            bindBoneRef.transform.position = bindBone.transform.position;
+            bindBoneRef.transform.rotation = bindBone.transform.rotation;
 
             //ワールド固定の対象にParentConstraintを付ける
             foreach(GameObject worldFixObject in worldFixObjects){
-                GameObject proxy = flatCommonFunctions.makePositionProxy(bindBoneRef, worldFixObject);
-                VRCParentConstraint constraint = proxy.AddComponent<VRCParentConstraint>();
-                VRCConstraintSource source = new VRCConstraintSource();
-                source.SourceTransform = bindBoneRef.transform;
-                source.Weight = 1.0f;
-                constraint.Sources.Add(source);
-                constraint.IsActive = true;
+                GameObject proxy = flatCommonFunctions.makeConstraintPositionProxy(bindBoneRef, worldFixObject, bindBoneRef);
             }
 
 
@@ -270,17 +266,29 @@ namespace Flat.subtools{
             }
 
             //Menuを作成
-            VRCExpressionsMenu menu;
+            VRCExpressionsMenu rootMenu;
             if(margeMA&&target.GetComponent<ModularAvatarMenuInstaller>().menuToAppend!=null){
-                menu = target.GetComponent<ModularAvatarMenuInstaller>().menuToAppend;
+                rootMenu = target.GetComponent<ModularAvatarMenuInstaller>().menuToAppend;
             }else{
-                menu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
-                AssetDatabase.CreateAsset(menu, folderPath+"/"+menuName+".asset");
+                rootMenu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
+                AssetDatabase.CreateAsset(rootMenu, folderPath+"/"+menuName+"Root.asset");
             }
+
+            VRCExpressionsMenu menu = new VRCExpressionsMenu();
+            AssetDatabase.CreateAsset(menu, folderPath+"/"+menuName+".asset");
+
+            VRCExpressionsMenu.Control menu_root = new VRCExpressionsMenu.Control{
+            name = menuName,
+            icon = rootMenuIcon,
+            type = VRCExpressionsMenu.Control.ControlType.SubMenu,
+            subMenu = menu
+            };
+            rootMenu.controls.Add(menu_root);
+
 
             VRCExpressionsMenu.Control menu_enable = new VRCExpressionsMenu.Control{
             name = menuName + "ON/OFF",
-            icon = rootMenuIcon,
+            icon = enableMenuIcon,
             type = VRCExpressionsMenu.Control.ControlType.Toggle,
             parameter = new VRCExpressionsMenu.Control.Parameter { name = enableParamName },
             value = 1.0f
@@ -289,15 +297,17 @@ namespace Flat.subtools{
 
             VRCExpressionsMenu.Control menu_toggle = new VRCExpressionsMenu.Control{
             name = menuName + "ワールド固定",
-            icon = rootMenuIcon,
+            icon = fixMenuIcon,
             type = VRCExpressionsMenu.Control.ControlType.Toggle,
             parameter = new VRCExpressionsMenu.Control.Parameter { name = fixParamName },
             value = 1.0f
             };
             menu.controls.Add(menu_toggle);
 
+            
+            EditorUtility.SetDirty(rootMenu);
             EditorUtility.SetDirty(menu);
-            target.GetComponent<ModularAvatarMenuInstaller>().menuToAppend = menu;
+            target.GetComponent<ModularAvatarMenuInstaller>().menuToAppend = rootMenu;
             
             List<ParameterConfig> parameters;
             if(margeMA&&target.GetComponent<ModularAvatarParameters>().parameters!=null){

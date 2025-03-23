@@ -13,6 +13,7 @@ using VRC.Dynamics;
 
 namespace Flat.subtools{
     public class flatCommonFunctions{
+        //単純なトグル機能を持つレイヤーを作る。引数としてAnimatorController,レイヤー名,パラメータ名,デフォルトのアニメーション,変更後のアニメーション,デフォルト状態がオンかどうかを指定します。
         static public AnimatorControllerLayer makeSimpleToggleLayer(AnimatorController controller,string layerName,string paramName, AnimationClip defaultAnim, AnimationClip changedAnim, bool default_on){
             //レイヤーをAnimatorControllerに追加します。
             AnimatorControllerLayer layer = new AnimatorControllerLayer{
@@ -91,13 +92,39 @@ namespace Flat.subtools{
             return currentParent.gameObject; 
         }
 
-        static public GameObject makePositionProxy(GameObject root,GameObject target){
+        static public GameObject makeConstraintPositionProxy(GameObject root,GameObject target, GameObject position){
             GameObject proxyObject = new GameObject(target.name);
             proxyObject.transform.parent = target.transform.parent;
-            proxyObject.transform.localPosition = Vector3.zero;
-            proxyObject.transform.localRotation = Quaternion.identity;
-            target.transform.parent = proxyObject.transform;
+            proxyObject.transform.position = position.transform.position;
+            proxyObject.transform.rotation = position.transform.rotation;
+            VRCParentConstraint constraint = proxyObject.AddComponent<VRCParentConstraint>();
+            VRCConstraintSource source = new VRCConstraintSource();
+            source.SourceTransform = position.transform;
+            source.Weight = 1.0f;
+            constraint.Sources.Add(source);
+            constraint.IsActive = true;
+            constraint.Locked = true;
+            target.transform.SetParent(proxyObject.transform,true);
+
             return proxyObject;
         }
+
+        //対象のGameObjectの子の中から名前が一致するものを探して返す関数
+        static public GameObject findChildByName(GameObject root, string name){
+            Debug.Log("findChildByName");
+            foreach (Transform child in root.transform){
+                if(child.name == name){
+                    return child.gameObject;
+                    Debug.Log("found:"+child.name);
+                }
+            }
+            return null;
+        }
+
+
+
+
+
+
     }
 }
