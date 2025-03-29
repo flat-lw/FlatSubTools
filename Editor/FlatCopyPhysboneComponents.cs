@@ -29,6 +29,7 @@ namespace Flat.subtools{
         List<CopyObjectPair> colliderPairs = new List<CopyObjectPair>();
         private Vector2 physboneScrollPosition;
         private Vector2 colliderScrollPosition;
+        bool colliderMakeWithObject;
 
         void OnGUI(){
             source = (GameObject)EditorGUILayout.ObjectField("Source",source,typeof(GameObject),true);
@@ -46,14 +47,15 @@ namespace Flat.subtools{
                 physboneScrollPosition = EditorGUILayout.BeginScrollView(physboneScrollPosition);
                 foreach(CopyObjectPair pair in physbonePairs){
                     EditorGUILayout.BeginHorizontal ();
-                    EditorGUILayout.ObjectField("",pair.source,typeof(GameObject),true);
-                    EditorGUILayout.ObjectField("",pair.target,typeof(GameObject),true);
+                    pair.source = (GameObject)EditorGUILayout.ObjectField("",pair.source,typeof(GameObject),true);
+                    pair.target = (GameObject)EditorGUILayout.ObjectField("",pair.target,typeof(GameObject),true);
                     EditorGUILayout.EndHorizontal ();
                 }
                 EditorGUILayout.EndScrollView();
             }
             if(colliderPairs.Count != 0){
                 EditorGUILayout.LabelField("Collider");
+                colliderMakeWithObject = EditorGUILayout.Toggle("Objectごと生成",colliderMakeWithObject);
                 EditorGUILayout.BeginHorizontal ();
                 EditorGUILayout.LabelField("souece");
                 EditorGUILayout.LabelField("target");
@@ -61,8 +63,8 @@ namespace Flat.subtools{
                 colliderScrollPosition = EditorGUILayout.BeginScrollView(colliderScrollPosition);
                 foreach(CopyObjectPair pair in colliderPairs){
                     EditorGUILayout.BeginHorizontal ();
-                    EditorGUILayout.ObjectField("",pair.source,typeof(GameObject),true);
-                    EditorGUILayout.ObjectField("",pair.target,typeof(GameObject),true);
+                    pair.source = (GameObject)EditorGUILayout.ObjectField("",pair.source,typeof(GameObject),true);
+                    pair.target = (GameObject)EditorGUILayout.ObjectField("",pair.target,typeof(GameObject),true);
                     EditorGUILayout.EndHorizontal ();
                 }
                 EditorGUILayout.EndScrollView();
@@ -83,7 +85,12 @@ namespace Flat.subtools{
             }
             foreach(VRCPhysBoneCollider pb in source.GetComponentsInChildren<VRCPhysBoneCollider>()){
                 Debug.Log(pb.gameObject.name);
-                GameObject targetGameObject = flatCommonFunctions.findChildByName(target,pb.gameObject.name);
+                GameObject targetGameObject;
+                if(colliderMakeWithObject){
+                    targetGameObject = flatCommonFunctions.findChildByName(target,pb.gameObject.transform.parent.name);
+                }else{
+                    targetGameObject = flatCommonFunctions.findChildByName(target,pb.gameObject.name);
+                }
                 colliderPairs.Add(new CopyObjectPair{source=pb.gameObject,target=targetGameObject});
             }
         }
@@ -131,17 +138,38 @@ namespace Flat.subtools{
             }
         }
         private void CopyColliderComponents(){
-            foreach(CopyObjectPair colliderPair in colliderPairs){
-                if(colliderPair.target != null){
-                    VRCPhysBoneCollider pbc = colliderPair.target.AddComponent<VRCPhysBoneCollider>();
-                    pbc.rootTransform = colliderPair.source.GetComponent<VRCPhysBoneCollider>().rootTransform;
-                    pbc.shapeType = colliderPair.source.GetComponent<VRCPhysBoneCollider>().shapeType;
-                    pbc.radius = colliderPair.source.GetComponent<VRCPhysBoneCollider>().radius;
-                    pbc.height = colliderPair.source.GetComponent<VRCPhysBoneCollider>().height;
-                    pbc.position = colliderPair.source.GetComponent<VRCPhysBoneCollider>().position;
-                    pbc.insideBounds = colliderPair.source.GetComponent<VRCPhysBoneCollider>().insideBounds;
-                    pbc.rotation = colliderPair.source.GetComponent<VRCPhysBoneCollider>().rotation;
-                    pbc.bonesAsSpheres = colliderPair.source.GetComponent<VRCPhysBoneCollider>().bonesAsSpheres;
+            if(colliderMakeWithObject){
+                foreach(CopyObjectPair colliderPair in colliderPairs){
+                    if(colliderPair.target != null){
+                        GameObject go = new GameObject();
+                        go.name = colliderPair.source.name;
+                        go.transform.parent = colliderPair.target.transform;
+                        go.transform.localPosition = colliderPair.source.transform.localPosition;
+                        VRCPhysBoneCollider pbc = go.AddComponent<VRCPhysBoneCollider>();
+                        pbc.rootTransform = colliderPair.source.GetComponent<VRCPhysBoneCollider>().rootTransform;
+                        pbc.shapeType = colliderPair.source.GetComponent<VRCPhysBoneCollider>().shapeType;
+                        pbc.radius = colliderPair.source.GetComponent<VRCPhysBoneCollider>().radius;
+                        pbc.height = colliderPair.source.GetComponent<VRCPhysBoneCollider>().height;
+                        pbc.position = colliderPair.source.GetComponent<VRCPhysBoneCollider>().position;
+                        pbc.insideBounds = colliderPair.source.GetComponent<VRCPhysBoneCollider>().insideBounds;
+                        pbc.rotation = colliderPair.source.GetComponent<VRCPhysBoneCollider>().rotation;
+                        pbc.bonesAsSpheres = colliderPair.source.GetComponent<VRCPhysBoneCollider>().bonesAsSpheres;
+                    }
+                }
+
+            }else{
+                foreach(CopyObjectPair colliderPair in colliderPairs){
+                    if(colliderPair.target != null){
+                        VRCPhysBoneCollider pbc = colliderPair.target.AddComponent<VRCPhysBoneCollider>();
+                        pbc.rootTransform = colliderPair.source.GetComponent<VRCPhysBoneCollider>().rootTransform;
+                        pbc.shapeType = colliderPair.source.GetComponent<VRCPhysBoneCollider>().shapeType;
+                        pbc.radius = colliderPair.source.GetComponent<VRCPhysBoneCollider>().radius;
+                        pbc.height = colliderPair.source.GetComponent<VRCPhysBoneCollider>().height;
+                        pbc.position = colliderPair.source.GetComponent<VRCPhysBoneCollider>().position;
+                        pbc.insideBounds = colliderPair.source.GetComponent<VRCPhysBoneCollider>().insideBounds;
+                        pbc.rotation = colliderPair.source.GetComponent<VRCPhysBoneCollider>().rotation;
+                        pbc.bonesAsSpheres = colliderPair.source.GetComponent<VRCPhysBoneCollider>().bonesAsSpheres;
+                    }
                 }
             }
         }
