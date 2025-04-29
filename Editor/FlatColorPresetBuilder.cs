@@ -33,7 +33,7 @@ namespace Flat.subtools{
         private Vector2 materialScrollPosition;
 
         void OnGUI(){
-            source = (GameObject)EditorGUILayout.ObjectField("Source",source,typeof(GameObject),true);
+            source = (GameObject)EditorGUILayout.ObjectField("Source(Prefab)",source,typeof(GameObject),false);
             if(GUILayout.Button("Get")){
                 GetMaterialPair();
             }
@@ -47,8 +47,8 @@ namespace Flat.subtools{
                 materialScrollPosition = EditorGUILayout.BeginScrollView(materialScrollPosition);
                 foreach(changeMaterialPair pair in matreialPairs){
                     EditorGUILayout.BeginHorizontal ();
-                    EditorGUILayout.ObjectField("",pair.source,typeof(Material),true);
-                    EditorGUILayout.ObjectField("",pair.target,typeof(Material),true);
+                    EditorGUILayout.ObjectField("",pair.source,typeof(Material),false);
+                    pair.target = (Material)EditorGUILayout.ObjectField("",pair.target,typeof(Material),false);
                     EditorGUILayout.EndHorizontal ();
                 }
                 EditorGUILayout.EndScrollView();
@@ -107,16 +107,16 @@ namespace Flat.subtools{
         //prefabのマテリアルを変更
         private void ChangeMaterials(GameObject pf){
             foreach(SkinnedMeshRenderer smr in pf.GetComponentsInChildren<SkinnedMeshRenderer>()){
+                List<Material> mats = new List<Material>();
                 foreach(Material mat in smr.sharedMaterials){
-                    List<Material> mats = new List<Material>();
                     foreach(changeMaterialPair cmp in matreialPairs){
                         if(cmp.source == mat){
                             mats.Add(cmp.target);
                             break;
                         }
                     }
-                    smr.sharedMaterials = mats.ToArray();
                 }
+                smr.sharedMaterials = mats.ToArray();
             }
         }
 
